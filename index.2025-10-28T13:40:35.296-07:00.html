@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Covenant Monitoring Dashboard</title>
+
+    <style>
+        /* ========================================
+           Global Styles & Reset
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+
+        /* ========================================
+           Header Section
+           ======================================== */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header h2 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.95;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            flex-wrap: wrap;
+        }
+
+        .header-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ========================================
+           Main Container
+           ======================================== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ========================================
+           Portfolio Table Section
+           ======================================== */
+        .portfolio-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .portfolio-section h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        tbody tr.selected {
+            background-color: #e7f3ff;
+        }
+
+        tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .property-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .doc-link {
+            color: #495057;
+            text-decoration: none;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .doc-link:hover {
+            background-color: #e9ecef;
+            color: #667eea;
+        }
+
+        .doc-link::before {
+            content: "📄 ";
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-compliant {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-breach {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* ========================================
+           Property Detail Section
+           ======================================== */
+        .detail-section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .detail-section.active {
+            display: block;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .detail-header h3 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .close-detail-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+
+        .close-detail-btn:hover {
+            background: #5a6268;
+        }
+
+        /* Two-Pane Layout */
+        .detail-content {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pane {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .pane h4 {
+            font-size: 1.3rem;
+            color: #495057;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        /* Right Pane - Financial Metrics */
+        .metrics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-card.active {
+            border-left-color: #667eea;
+            background: #e7f3ff;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .metric-formula {
+            font-size: 0.85rem;
+            color: #868e96;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .metric-status {
+            margin-top: 10px;
+        }
+
+        /* Left Pane - Document Excerpts */
+        .excerpt-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .excerpt-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .excerpt-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #495057;
+        }
+
+        .excerpt-text mark {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .excerpt-placeholder {
+            color: #adb5bd;
+            font-style: italic;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* Excerpt Text Box */
+        .excerpt-text-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Document Reference Box */
+        .document-reference-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .document-ref-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .document-ref-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .document-ref-page {
+            font-size: 0.95rem;
+            color: #0056b3;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .document-ref-page::before {
+            content: "📍 ";
+            margin-right: 4px;
+        }
+
+        .open-new-tab-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .open-new-tab-btn:hover {
+            background: #5568d3;
+        }
+
+
+#pdfContainer {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+#pdfCanvas {
+  display: block;
+  width: 100%;
+}
+
+        /* PDF Viewer Box */
+        .pdf-viewer-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            min-height: 400px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .pdf-viewer-box canvas {
+            width: 100%;
+            display: block;
+            background: white;
+            height: auto;
+        }
+#pdfTextLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  color: transparent;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  z-index: 10;
+ transform-origin: 0 0;
+}
+
+        #pdfControls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        #pdfControls button {
+            padding: 5px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        #pdfControls button:hover {
+            background: #5568d3;
+        }
+
+
+        /* ========================================
+           Utility Classes
+           ======================================== */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ========================================
+           Loading State
+           ======================================== */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        /* ========================================
+           Scrollbar Styling
+           ======================================== */
+        .table-wrapper::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f3f5;
+            border-radius: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #adb5bd;
+            border-radius: 4px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #868e96;
+        }
+    </style>
+
+    <!-- PDF.js Library (inline for self-contained deployment) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+</head>
+<body>
+    <!-- Embedded Data Payload -->
+    <script id="unifiedPayload" type="application/json">
+{
+  "portfolio": {
+    "portfolio_metadata": {
+      "title": "Covenant Monitoring Portfolio",
+      "last_updated_on": "2025-10-28T20:40:29.985Z",
+      "total_properties": 1
+    },
+    "properties": [
+      {
+        "property_id": "992733",
+        "property_name": "Philadelphia Gardens",
+        "computed": {
+          "dscr": 1.23,
+          "status": "BREACH",
+          "breach_reasons": [
+            "DSCR (1.23) below minimum threshold (1.25)"
+          ]
+        },
+        "loan_doc_link": "https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1X4oQDdwR4H0Nq8aXAKRHwj8rMJgxes7H",
+        "financial_doc_link": "https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1V8JPTDFG6umaazWbRwTEKd9k1P8yPXug",
+        "loan_doc_name": "Philadelphia_Gardens_Loan_Agreement.pdf",
+        "financial_doc_name": "Philadelphia_Gardens_Financials.pdf"
+      }
+    ]
+  },
+  "property_details": {
+    "992733": {
+      "metadata": {
+        "property_id": "992733",
+        "property_name": "Philadelphia Gardens",
+        "last_updated_on": "2024-04-30T00:00:00-07:00",
+        "loan_doc_link": "https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1X4oQDdwR4H0Nq8aXAKRHwj8rMJgxes7H",
+        "loan_doc_name": "Philadelphia_Gardens_Loan_Agreement.pdf",
+        "financial_doc_link": "https://corsproxy.io/?https://drive.google.com/uc?export=download&id=1V8JPTDFG6umaazWbRwTEKd9k1P8yPXug",
+        "financial_doc_name": "Philadelphia_Gardens_Financials.pdf"
+      },
+      "loan_info": {
+        "annual_debt_service": 1029443.16,
+        "covenants": {
+          "min_dscr": 1.25
+        },
+        "document_reference": {
+          "section": "6. FINANCIAL COVENANTS"
+        }
+      },
+      "financials": {
+        "net_operating_income": 1262889,
+        "document_reference": {
+          "table_name": "Profit & Loss"
+        }
+      },
+      "computed": {
+        "dscr": 1.23,
+        "status": "BREACH",
+        "breach_reasons": [
+          "DSCR (1.23) below minimum threshold (1.25)"
+        ]
+      },
+      "document_reference_list": {
+        "NOI_reference": "NET OPERATING INCOME (NOI) 420,963.00 1,262,889.00",
+        "Monthly_debt_reference": "D. Monthly Payments. Borrower shall make monthly payments of principal and interest in the amount of $85,786.93, due on the first day of each month, commencing November 1, 2025, and continuing until the Maturity Date. The Loan amortizes over a twenty-five (25) year period, with a balloon payment of the remaining principal balance due at maturity."
+      }
+    }
+  }
+}
+    </script>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header" id="header">
+            <h1>Covenant Monitoring Dashboard</h1>
+            <h2>Real-time Loan Compliance Tracking</h2>
+            <p>Gain instant visibility into your loan portfolio's compliance with financial covenants, ensuring proactive risk management and informed decision-making.</p>
+            <div class="header-meta" id="headerMeta">
+                <div class="header-meta-item">
+                    <span>📅</span>
+                    <span id="lastUpdated">Loading...</span>
+                </div>
+                <div class="header-meta-item">
+                    <span>🏢</span>
+                    <span id="totalProperties">Loading...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Portfolio Table Section -->
+        <section class="portfolio-section" id="portfolioSection">
+            <h3>Portfolio Compliance Overview</h3>
+            <div class="table-wrapper">
+                <table id="portfolioTable">
+                    <thead>
+                        <tr>
+                            <th>Property Name</th>
+                            <th>Loan Agreement</th>
+                            <th>Financial Document</th>
+                            <th>Compliance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioTableBody">
+                        <tr>
+                            <td colspan="4" class="loading">Loading portfolio data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Property Detail Section -->
+        <section class="detail-section" id="detailSection">
+            <div class="detail-header">
+                <h3 id="detailPropertyName">Property Details</h3>
+                <button class="close-detail-btn" onclick="closeDetailView()">← Return to Portfolio</button>
+            </div>
+
+            <div class="detail-content">
+                <!-- Left Pane: Document Context -->
+                <div class="pane">
+                    <h4>Document Context</h4>
+                    <div class="excerpt-container" id="excerptContainer">
+                        <div class="excerpt-placeholder">
+                            Click on a metric to view relevant document excerpts
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Pane: Financial Metrics -->
+                <div class="pane">
+                    <h4>Financial Metrics</h4>
+                    <div class="metrics-list" id="metricsList">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ========================================
+        // Global State
+        // ========================================
+        let portfolioData = null;
+        let propertyDetails = {};
+        let currentPropertyId = null;
+
+        // ========================================
+        // Initialize Dashboard
+        // ========================================
+        function initDashboard() {
+            try {
+                // Load embedded data
+                const payloadElement = document.getElementById('unifiedPayload');
+                const payload = JSON.parse(payloadElement.textContent);
+
+                portfolioData = payload.portfolio;
+                propertyDetails = payload.property_details || {};
+
+                // Update header with metadata
+                updateHeader();
+
+                // Render portfolio table
+                renderPortfolioTable();
+
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                document.getElementById('portfolioTableBody').innerHTML =
+                    '<tr><td colspan="4" style="color: red; text-align: center;">Error loading dashboard data</td></tr>';
+            }
+        }
+
+        // ========================================
+        // Update Header Metadata
+        // ========================================
+        function updateHeader() {
+            const metadata = portfolioData.portfolio_metadata || {};
+
+            // Update title if available
+            const title = metadata.title;
+            if (title) {
+                document.querySelector('.header h1').textContent = title;
+            }
+
+            // Update description if available
+            const description = metadata.description;
+            if (description) {
+                document.querySelector('.header p').textContent = description;
+            }
+
+            // Update last updated
+            const lastUpdated = metadata.last_updated_on || 'N/A';
+            document.getElementById('lastUpdated').textContent = `Last Updated: ${formatDate(lastUpdated)}`;
+
+            // Update total properties
+            const totalProps = metadata.total_properties || 0;
+            document.getElementById('totalProperties').textContent = `${totalProps} Properties`;
+        }
+
+        // ========================================
+        // Render Portfolio Table
+        // ========================================
+        function renderPortfolioTable() {
+            const tbody = document.getElementById('portfolioTableBody');
+            const properties = portfolioData.properties || [];
+
+            if (properties.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No properties found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            properties.forEach((property, index) => {
+                const row = document.createElement('tr');
+                row.onclick = () => showPropertyDetail(property.property_id);
+
+                // Property Name
+                const nameCell = document.createElement('td');
+                nameCell.innerHTML = `<span class="property-name">${escapeHtml(property.property_name)}</span>`;
+                row.appendChild(nameCell);
+
+                // Loan Agreement Link (prefer Netlify path)
+                const loanCell = document.createElement('td');
+                const loanLink = document.createElement('a');
+                loanLink.href = property.loan_doc_link_netlify || property.loan_doc_link || '#';
+                loanLink.className = 'doc-link';
+                loanLink.textContent = property.loan_doc_name || 'View Document';
+                loanLink.target = '_blank';
+                loanCell.appendChild(loanLink);
+                row.appendChild(loanCell);
+
+                // Financial Document Link (prefer Netlify path)
+                const finCell = document.createElement('td');
+                const finLink = document.createElement('a');
+                finLink.href = property.financial_doc_link_netlify || property.financial_doc_link || '#';
+                finLink.className = 'doc-link';
+                finLink.textContent = property.financial_doc_name || 'View Document';
+                finLink.target = '_blank';
+                finCell.appendChild(finLink);
+                row.appendChild(finCell);
+
+                // Status
+                const statusCell = document.createElement('td');
+                const status = property.computed?.status || 'UNKNOWN';
+                statusCell.innerHTML = getStatusBadge(status);
+                row.appendChild(statusCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // ========================================
+        // Show Property Detail View
+        // ========================================
+        function showPropertyDetail(propertyId) {
+            currentPropertyId = propertyId;
+
+            const property = propertyDetails[propertyId];
+            if (!property) {
+                alert('Property details not available');
+                return;
+            }
+
+            // Update selected row in table
+            const rows = document.querySelectorAll('#portfolioTableBody tr');
+            rows.forEach(row => row.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            // Update property name in detail header
+            const propertyName = property.metadata?.property_name || propertyId;
+            document.getElementById('detailPropertyName').textContent = propertyName;
+
+            // Render metrics
+            renderMetrics(property);
+
+            // Show detail section, hide portfolio section
+            document.getElementById('detailSection').classList.add('active');
+            document.getElementById('portfolioSection').style.display = 'none';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Show DSCR by default
+            showDSCRExcerpt(property);
+        }
+
+        // ========================================
+        // Close Detail View
+        // ========================================
+        function closeDetailView() {
+            currentPropertyId = null;
+            document.getElementById('detailSection').classList.remove('active');
+            document.getElementById('portfolioSection').style.display = 'block';
+
+            // Clear selected row
+            const rows = document.querySelectorAll('#portfolioTableBody tr');
+            rows.forEach(row => row.classList.remove('selected'));
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ========================================
+        // Render Financial Metrics
+        // ========================================
+        function renderMetrics(property) {
+            const container = document.getElementById('metricsList');
+            container.innerHTML = '';
+
+            const loanInfo = property.loan_info || {};
+            const financials = property.financials || {};
+            const computed = property.computed || {};
+
+            // Metric 1: Net Operating Income
+            const noiCard = createMetricCard(
+                'Net Operating Income (NOI)',
+                formatCurrency(financials.net_operating_income || 0),
+                'noi',
+                () => showFinancialExcerpt(property)
+            );
+            container.appendChild(noiCard);
+
+            // Metric 2: Annual Debt Service
+            const debtCard = createMetricCard(
+                'Annual Debt Service',
+                formatCurrency(loanInfo.annual_debt_service || 0),
+                'debt',
+                () => showLoanExcerpt(property)
+            );
+            container.appendChild(debtCard);
+
+            // Metric 3: DSCR
+            const dscrCard = createMetricCard(
+                'Debt Service Coverage Ratio (DSCR)',
+                formatRatio(computed.dscr || 0),
+                'dscr',
+                () => showDSCRExcerpt(property)
+            );
+
+            // Add DSCR formula
+            const formula = document.createElement('div');
+            formula.className = 'metric-formula';
+            formula.textContent = 'DSCR = NOI ÷ Annual Debt Service';
+            dscrCard.querySelector('.metric-value').after(formula);
+
+            // Add DSCR status badge
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'metric-status';
+            statusDiv.innerHTML = getStatusBadge(computed.status || 'UNKNOWN');
+            dscrCard.appendChild(statusDiv);
+
+            // Add required minimum
+            const minDscr = loanInfo.covenants?.min_dscr;
+            if (minDscr) {
+                const reqDiv = document.createElement('div');
+                reqDiv.className = 'metric-formula';
+                reqDiv.textContent = `Required Minimum: ${formatRatio(minDscr)}`;
+                statusDiv.before(reqDiv);
+            }
+
+            container.appendChild(dscrCard);
+        }
+
+        // ========================================
+        // Create Metric Card
+        // ========================================
+        function createMetricCard(label, value, id, clickHandler) {
+            const card = document.createElement('div');
+            card.className = 'metric-card';
+            card.id = `metric-${id}`;
+            card.onclick = clickHandler;
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'metric-label';
+            labelDiv.textContent = label;
+
+            const valueDiv = document.createElement('div');
+            valueDiv.className = 'metric-value';
+            valueDiv.textContent = value;
+
+            card.appendChild(labelDiv);
+            card.appendChild(valueDiv);
+
+            return card;
+        }
+
+        // ========================================
+        // Show Excerpts
+        // ========================================
+        async function showFinancialExcerpt(property) {
+            clearActiveMetrics();
+            document.getElementById('metric-noi')?.classList.add('active');
+
+            const docRefList = property.document_reference_list;
+            if (!docRefList || !docRefList.NOI_reference) {
+                showExcerptPlaceholder('No NOI reference text available');
+                return;
+            }
+
+            const noiReferenceText = docRefList.NOI_reference;
+            const financials = property.financials || {};
+            const docRef = financials.document_reference || {};
+
+            // Get portfolio property info for PDF links
+            const portfolioProperty = portfolioData.properties.find(
+                p => p.property_id === currentPropertyId
+            );
+
+            // Prefer Netlify path if available, fallback to original link
+            const financialLink = portfolioProperty?.financial_doc_link_netlify ||
+                                  portfolioProperty?.financial_doc_link ||
+                                  null;
+
+            console.log('=== showFinancialExcerpt DEBUG ===');
+            console.log('portfolioProperty:', portfolioProperty);
+            console.log('financial_doc_link_netlify:', portfolioProperty?.financial_doc_link_netlify);
+            console.log('financial_doc_link:', portfolioProperty?.financial_doc_link);
+            console.log('Selected financialLink:', financialLink);
+            console.log('NOI_reference text:', noiReferenceText);
+            console.log('=====================================');
+
+            // Search for the text in the PDF
+            let pageNumber = null;
+            if (financialLink) {
+                showExcerptPlaceholder('Searching PDF for NOI reference...');
+                pageNumber = await window.searchPDFForText(financialLink, noiReferenceText);
+
+                // If search failed, show helpful message
+                if (pageNumber === null) {
+                    const container = document.getElementById('excerptContainer');
+                    container.innerHTML = `
+                        <div class="excerpt-text-box">
+                            <div class="excerpt-meta">
+                                <strong>Financial Statement</strong>
+                            </div>
+                            <div class="excerpt-text">
+                                ${escapeHtml(noiReferenceText)}
+                            </div>
+                        </div>
+                        <div class="document-reference-box">
+                            <div class="document-ref-label">Referenced Document:</div>
+                            <div class="document-ref-name">📄 ${escapeHtml(portfolioProperty?.financial_doc_name || 'Financial Document')}</div>
+                            <div style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                ⚠️ Unable to locate exact text in PDF. Please use the button below to search manually.
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+
+            renderExcerpt(
+                'Financial Statement',
+                noiReferenceText,
+                null,  // No specific highlight term, the whole text is the reference
+                `${docRef.table_name || 'Financial Document'}${pageNumber ? ' - Page ' + pageNumber : ''}`,
+                true,  // escapeText
+                portfolioProperty?.financial_doc_name || null,
+                financialLink,
+                pageNumber,
+                noiReferenceText  // pdfHighlight - highlight the entire reference text
+            );
+        }
+
+        async function showLoanExcerpt(property) {
+            clearActiveMetrics();
+            document.getElementById('metric-debt')?.classList.add('active');
+
+            const docRefList = property.document_reference_list;
+            if (!docRefList || !docRefList.Monthly_debt_reference) {
+                showExcerptPlaceholder('No debt service reference text available');
+                return;
+            }
+
+            const debtReferenceText = docRefList.Monthly_debt_reference;
+            const loanInfo = property.loan_info || {};
+            const docRef = loanInfo.document_reference || {};
+
+            // Get portfolio property info for PDF links
+            const portfolioProperty = portfolioData.properties.find(
+                p => p.property_id === currentPropertyId
+            );
+
+            // Prefer Netlify path if available, fallback to original link
+            const loanLink = portfolioProperty?.loan_doc_link_netlify ||
+                            portfolioProperty?.loan_doc_link ||
+                            null;
+
+            console.log('=== showLoanExcerpt DEBUG ===');
+            console.log('portfolioProperty:', portfolioProperty);
+            console.log('loan_doc_link_netlify:', portfolioProperty?.loan_doc_link_netlify);
+            console.log('loan_doc_link:', portfolioProperty?.loan_doc_link);
+            console.log('Selected loanLink:', loanLink);
+            console.log('Monthly_debt_reference text:', debtReferenceText);
+            console.log('=====================================');
+
+            // Search for the text in the PDF
+            let pageNumber = null;
+            if (loanLink) {
+                showExcerptPlaceholder('Searching PDF for debt service reference...');
+                pageNumber = await window.searchPDFForText(loanLink, debtReferenceText);
+
+                // If search failed, show helpful message
+                if (pageNumber === null) {
+                    const container = document.getElementById('excerptContainer');
+                    container.innerHTML = `
+                        <div class="excerpt-text-box">
+                            <div class="excerpt-meta">
+                                <strong>Loan Agreement</strong>
+                            </div>
+                            <div class="excerpt-text">
+                                ${escapeHtml(debtReferenceText)}
+                            </div>
+                        </div>
+                        <div class="document-reference-box">
+                            <div class="document-ref-label">Referenced Document:</div>
+                            <div class="document-ref-name">📄 ${escapeHtml(portfolioProperty?.loan_doc_name || 'Loan Agreement')}</div>
+                            <div style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                                ⚠️ Unable to locate exact text in PDF. Please use the button below to search manually.
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+
+            renderExcerpt(
+                'Loan Agreement',
+                debtReferenceText,
+                null,  // No specific highlight term, the whole text is the reference
+                `${docRef.section || 'Loan Agreement'}${pageNumber ? ' - Page ' + pageNumber : ''}`,
+                true,  // escapeText
+                portfolioProperty?.loan_doc_name || null,
+                loanLink,
+                pageNumber,
+                debtReferenceText  // pdfHighlight - highlight the entire reference text
+            );
+        }
+
+        async function showDSCRExcerpt(property) {
+            clearActiveMetrics();
+            document.getElementById('metric-dscr')?.classList.add('active');
+
+            const loanInfo = property.loan_info || {};
+            const computed = property.computed || {};
+            const docRefList = property.document_reference_list;
+
+            if (!docRefList || !docRefList.Monthly_debt_reference) {
+                showExcerptPlaceholder('No covenant reference available');
+                return;
+            }
+
+            const debtReferenceText = docRefList.Monthly_debt_reference;
+            const container = document.getElementById('excerptContainer');
+
+            // Show DSCR calculation without document reference or PDF viewer
+            // DSCR is a calculated metric, not an extracted value from a document
+            let excerptText = `<strong>DSCR Calculation:</strong><br>`;
+            excerptText += `NOI (${formatCurrency(property.financials?.net_operating_income || 0)}) ÷ `;
+            excerptText += `Annual Debt Service (${formatCurrency(loanInfo.annual_debt_service || 0)}) `;
+            excerptText += `= ${formatRatio(computed.dscr || 0)}<br><br>`;
+            excerptText += `<strong>Covenant Requirement:</strong><br>`;
+            excerptText += escapeHtml(debtReferenceText);
+
+            // Simple display without document reference box or PDF viewer
+            container.innerHTML = `
+                <div class="excerpt-text-box">
+                    <div class="excerpt-meta">
+                        <strong>DSCR Covenant</strong>
+                    </div>
+                    <div class="excerpt-text">
+                        ${excerptText}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // Render Excerpt
+        // ========================================
+        function renderExcerpt(docType, text, highlight, meta, escapeText = true, documentName = null, documentLink = null, pageNumber = null, pdfHighlight = null) {
+            const container = document.getElementById('excerptContainer');
+
+            // Process text with highlighting
+            let processedText = escapeText ? escapeHtml(text) : text;
+            if (highlight) {
+                const highlightEscaped = escapeHtml(highlight);
+                const regex = new RegExp(`(${escapeRegex(highlightEscaped)})`, 'gi');
+                processedText = processedText.replace(regex, '<mark>$1</mark>');
+            }
+
+            let html = `
+                <div class="excerpt-text-box">
+                    <div class="excerpt-meta">
+                        <strong>${escapeHtml(docType)}</strong>
+                    </div>
+                    <div class="excerpt-text">
+                        ${processedText}
+                    </div>
+                </div>
+            `;
+
+            // Store PDF load parameters
+            let pdfLoadParams = null;
+
+            // Add document reference and PDF viewer if provided
+            if (documentName && documentLink) {
+                console.log('=== renderExcerpt PDF Setup DEBUG ===');
+                console.log('documentName:', documentName);
+                console.log('documentLink:', documentLink);
+                console.log('pageNumber:', pageNumber);
+                console.log('pdfHighlight:', pdfHighlight);
+
+                let pdfUrl, pdfFileUrl;
+
+                // Check if this is a Google Drive link
+                const isGoogleDrive = documentLink.includes('drive.google.com');
+                console.log('isGoogleDrive:', isGoogleDrive);
+
+                if (isGoogleDrive) {
+                    // Extract file ID from Google Drive URL
+                    // Format: https://drive.google.com/file/d/{FILE_ID}/view
+                    const fileIdMatch = documentLink.match(/\/file\/d\/([^\/]+)\//);
+                    const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+                        console.log('Before FILEID');
+                    if (fileId) {
+                        // For "Open in New Tab" button: use standard /view URL
+                        //pdfUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                        //pdfUrl = `https://drive.google.com/file/d/${fileId}/view`;
+                        pdfUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                        console.log('IN FILEID');
+
+                        // For PDF.js: Use Google Drive download URL
+                        pdfFileUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                         //pdfFileUrl = pdfUrl;
+                    } else {
+                        // Couldn't extract file ID, use original link
+                        pdfUrl = documentLink;
+                        pdfFileUrl = documentLink;
+                    }
+                } else {
+                    // Local file
+                    pdfUrl = documentLink;
+                    pdfFileUrl = documentLink;
+                }
+
+                console.log('Resolved pdfUrl:', pdfUrl);
+                console.log('Resolved pdfFileUrl:', pdfFileUrl);
+                console.log('=====================================');
+
+                html += `
+                    <div class="document-reference-box">
+                        <div class="document-ref-label">Referenced Document:</div>
+                        <div class="document-ref-name">📄 ${escapeHtml(documentName)}</div>
+                        ${pageNumber ? `<div class="document-ref-page">Page ${pageNumber}${meta ? ' - ' + escapeHtml(meta.split(' - ')[1] || '') : ''}</div>` : ''}
+                        <button class="open-new-tab-btn" onclick="window.open('${pdfUrl}', '_blank')">
+                           Download →
+                        </button>
+                    </div>
+                    <div class="pdf-viewer-box" id="pdfContainer" stylle="position: relative;">
+                        <canvas id="pdfCanvas"></canvas>
+                        <div id="pdfTextLayer"></div>
+			<div id="pdfControls">
+		        <button onclick="window.prevPDFPage()">← Previous</button>
+		        <span id="pdfPageNum">1</span> / <span id="pdfPageCount">0</span>
+		        <button onclick="window.nextPDFPage()">Next →</button>
+		        <button onclick="window.zoomIn()">+</button>
+		        <button onclick="window.zoomOut()">-</button>
+		      </div>
+                    </div>
+                `;
+
+                // Store parameters for PDF loading (capture in closure)
+                if (pageNumber && pdfFileUrl) {
+                    pdfLoadParams = {
+                        url: pdfFileUrl,
+                        page: pageNumber,
+                        highlight: pdfHighlight
+                    };
+                }
+            }
+
+            // Clear previous PDF state to prevent caching issues
+            if (window.pdfDoc) {
+                window.pdfDoc = null;
+            }
+
+            container.innerHTML = html;
+
+            // After rendering HTML, load the PDF if we have parameters
+            if (pdfLoadParams) {
+                setTimeout(() => {
+                    console.log('=== LOADING PDF ===');
+                    console.log('pdfLoadParams:', pdfLoadParams);
+                    console.log('URL being loaded:', pdfLoadParams.url);
+                    console.log('Page:', pdfLoadParams.page);
+                    console.log('Highlight:', pdfLoadParams.highlight);
+                    console.log('=====================================');
+                    window.loadPDFDocument(pdfLoadParams.url, pdfLoadParams.page, pdfLoadParams.highlight);
+                }, 100);
+            } else {
+                console.log('=== NO PDF TO LOAD ===');
+                console.log('pdfLoadParams is null - PDF will not be loaded');
+                console.log('Reasons: pageNumber or pdfFileUrl missing');
+                console.log('=====================================');
+            }
+        }
+
+        function showExcerptPlaceholder(message) {
+            const container = document.getElementById('excerptContainer');
+            container.innerHTML = `<div class="excerpt-placeholder">${escapeHtml(message)}</div>`;
+        }
+
+        function clearActiveMetrics() {
+            document.querySelectorAll('.metric-card').forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+
+        // ========================================
+        // Utility Functions
+        // ========================================
+        function getStatusBadge(status) {
+            const statusUpper = (status || '').toUpperCase();
+            let icon = '';
+            let className = '';
+
+            switch (statusUpper) {
+                case 'COMPLIANT':
+                    icon = '🟢';
+                    className = 'status-compliant';
+                    break;
+                case 'WARNING':
+                    icon = '🟡';
+                    className = 'status-warning';
+                    break;
+                case 'BREACH':
+                    icon = '🔴';
+                    className = 'status-breach';
+                    break;
+                default:
+                    icon = '⚪';
+                    className = 'status-badge';
+            }
+
+            return `<span class="status-badge ${className}">${icon} ${statusUpper}</span>`;
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value || 0);
+        }
+
+        function formatRatio(value) {
+            return (value || 0).toFixed(2) + 'x';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString || dateString === 'N/A') return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch {
+                return dateString;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function escapeRegex(str) {
+            return (str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // ========================================
+        // PDF.js Custom Viewer Functions
+        // ========================================
+        let pdfDoc = null;
+        let currentPDFPage = 1;
+        let pdfScale = 2.0;
+
+        // ========================================
+        // PDF Text Search Function (Fuzzy Matching)
+        // ========================================
+        window.searchPDFForText = async function(pdfUrl, searchText) {
+            /**
+             * Search for text across all pages of a PDF document using fuzzy matching.
+             * Returns the page number with the highest keyword match score.
+             *
+             * @param {string} pdfUrl - URL or path to the PDF file
+             * @param {string} searchText - Text to search for
+             * @returns {Promise<number|null>} - Page number (1-indexed) or null if not found
+             */
+            try {
+                console.log('=== PDF FUZZY TEXT SEARCH ===');
+                console.log('PDF URL:', pdfUrl);
+                console.log('Search text:', searchText);
+
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdf = await loadingTask.promise;
+
+                console.log(`PDF loaded: ${pdf.numPages} pages`);
+
+                // Extract significant keywords from search text
+                // Match: words ≥3 chars, numbers with formatting, currency values
+                const keywords = searchText.match(/\b[a-zA-Z]{3,}\b|\b\d+[\d,.$%]*\b/gi) || [];
+                console.log('Keywords extracted:', keywords);
+
+                if (keywords.length === 0) {
+                    console.log('No keywords found in search text');
+                    return null;
+                }
+
+                // Helper function to normalize text
+                function normalizeText(text) {
+                    return text
+                        .toLowerCase()
+                        .replace(/[–—−]/g, '-')  // Normalize all dash variants
+                        .replace(/\s+/g, ' ')      // Collapse whitespace
+                        .replace(/[^\w\s\-.$%]/g, '') // Remove special chars except common ones
+                        .trim();
+                }
+
+                const normalizedKeywords = keywords.map(k => normalizeText(k));
+                console.log('Normalized keywords:', normalizedKeywords);
+
+                let bestMatch = { pageNum: null, score: 0, matches: 0 };
+
+                // Search through all pages
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+
+                    // Extract all text from page
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    const normalizedPageText = normalizeText(pageText);
+
+                    // Count how many keywords appear on this page
+                    let matchCount = 0;
+                    for (let keyword of normalizedKeywords) {
+                        if (normalizedPageText.includes(keyword)) {
+                            matchCount++;
+                        }
+                    }
+
+                    const score = matchCount / normalizedKeywords.length;
+                    console.log(`Page ${pageNum}: ${matchCount}/${normalizedKeywords.length} keywords matched (${(score * 100).toFixed(1)}%)`);
+
+                    // Update best match if this page has higher score
+                    if (score > bestMatch.score) {
+                        bestMatch = { pageNum, score, matches: matchCount };
+                    }
+                }
+
+                // Require at least 60% keyword match
+                const MATCH_THRESHOLD = 0.6;
+
+                if (bestMatch.score >= MATCH_THRESHOLD) {
+                    console.log(`✓ Best match: Page ${bestMatch.pageNum} (${(bestMatch.score * 100).toFixed(1)}% match)`);
+                    console.log('================================');
+                    return bestMatch.pageNum;
+                } else {
+                    console.log(`✗ No good match found (best: ${(bestMatch.score * 100).toFixed(1)}%, threshold: ${MATCH_THRESHOLD * 100}%)`);
+                    console.log('================================');
+                    return null;
+                }
+
+            } catch (error) {
+                console.error('Error searching PDF:', error);
+                console.log('================================');
+                return null;
+            }
+        };
+
+        window.loadPDFDocument = async function(url, pageNumber, highlightText) {
+                    console.log('Highlight in LOADPDFDOCUMENT:', highlightText);
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+
+                document.getElementById('pdfPageCount').textContent = pdfDoc.numPages;
+
+		window.currentHighlightText = highlightText;
+                // Jump to specified page
+                currentPDFPage = pageNumber || 1;
+                await renderPDFPage(currentPDFPage,highlightText);
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                document.getElementById('pdfCanvas').parentElement.innerHTML =
+                    '<p style="padding: 20px; color: red;">Error loading PDF. Please try opening in a new tab.</p>';
+            }
+        };
+
+/*
+        async function renderPDFPage(num) {
+            try {
+                const page = await pdfDoc.getPage(num);
+                const canvas = document.getElementById('pdfCanvas');
+                const context = canvas.getContext('2d');
+
+                const viewport = page.getViewport({ scale: pdfScale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Remove inline CSS styles that cause distortion
+                // Let canvas render at native dimensions to maintain aspect ratio
+                canvas.style.width = '';
+                canvas.style.height = '';
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+
+                 // ====== NEW: Render Text Layer ======
+    const textContent = await page.getTextContent();
+    const textLayerDiv = document.getElementById('pdfTextLayer');
+
+    // Clear old text
+    textLayerDiv.innerHTML = '';
+    textLayerDiv.style.position = 'absolute';
+    textLayerDiv.style.left = 0;
+    textLayerDiv.style.top = 0;
+    textLayerDiv.style.height = `${viewport.height}px`;
+    textLayerDiv.style.width = `${viewport.width}px`;
+    textLayerDiv.style.pointerEvents = 'none'; // let clicks go to canvas
+
+    pdfjsLib.renderTextLayer({
+      textContent,
+      container: textLayerDiv,
+      viewport,
+      textDivs: [],
+    });
+
+                    console.log('Highlight in RENDER PAGE:', highlightText);
+    // ====== NEW: Apply Highlight ======
+    if (highlightText) {
+      const regex = new RegExp(highlightText, 'gi');
+      // Wait a bit for text layer rendering
+                    console.log('regex in :', regex);
+      setTimeout(() => {
+console.log('in set timeout')
+        textLayerDiv.querySelectorAll('span').forEach(span => {
+          if (regex.test(span.textContent)) {
+            span.style.backgroundColor = '#fff176';  // yellow highlight
+            span.style.borderRadius = '3px';
+            span.style.padding = '2px';
+          }
+        });
+      }, 500);
+    }
+                document.getElementById('pdfPageNum').textContent = num;
+                currentPDFPage = num;
+            } catch (error) {
+                console.error('Error rendering PDF page:', error);
+            }
+        }
+*/
+async function renderPDFPage(num, highlightText = null) {
+  try {
+    const page = await pdfDoc.getPage(num);
+    const canvas = document.getElementById('pdfCanvas');
+    const context = canvas.getContext('2d');
+    const viewport = page.getViewport({ scale: pdfScale });
+
+    // Resize canvas
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    // Clear old text layer
+    const textLayerDiv = document.getElementById('pdfTextLayer');
+    textLayerDiv.innerHTML = '';
+
+    // Render page image
+    await page.render({ canvasContext: context, viewport }).promise;
+
+    // Render text layer (overlay)
+    const textContent = await page.getTextContent();
+textLayerDiv.style.setProperty("--scale-factor", viewport.scale);
+
+    pdfjsLib.renderTextLayer({
+      textContentSource: textContent,
+      container: textLayerDiv,
+      viewport,
+      textDivs: [],
+    });
+
+    // Wait for text to render, then highlight
+if (highlightText) {
+  console.log('HIGHLIGHT TEXT',highlightText);
+  const cleanHighlight = highlightText.trim().split(/\s+/).slice(0, 4).join(" "); // first few words
+  const regex = new RegExp(cleanHighlight, "i");
+  console.log('cleanhightlight TEXT',cleanHighlight);
+  console.log('regex TEXT',regex);
+
+  setTimeout(() => {
+    textLayerDiv.querySelectorAll("span").forEach(span => {
+      if (regex.test(span.textContent)) {
+        span.style.backgroundColor = "#fff176";
+        span.style.borderRadius = "3px";
+        span.style.padding = "1px 2px";
+      }
+    });
+  }, 1000);
+}
+    document.getElementById('pdfPageNum').textContent = num;
+    currentPDFPage = num;
+  } catch (error) {
+    console.error('Error rendering PDF page:', error);
+  }
+}
+
+/*
+       async function renderPDFPage(num, highlightText = null) {
+  try {
+    const page = await pdfDoc.getPage(num);
+    const canvas = document.getElementById('pdfCanvas');
+    const context = canvas.getContext('2d');
+    const viewport = page.getViewport({ scale: pdfScale });
+
+    // Render the page
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    await page.render({ canvasContext: context, viewport }).promise;
+
+    // ====== NEW: Render Text Layer ======
+    const textContent = await page.getTextContent();
+    const textLayerDiv = document.getElementById('pdfTextLayer');
+
+    // Clear old text
+    textLayerDiv.innerHTML = '';
+    textLayerDiv.style.position = 'absolute';
+    textLayerDiv.style.left = 0;
+    textLayerDiv.style.top = 0;
+    textLayerDiv.style.height = `${viewport.height}px`;
+    textLayerDiv.style.width = `${viewport.width}px`;
+    textLayerDiv.style.pointerEvents = 'none'; // let clicks go to canvas
+
+    pdfjsLib.renderTextLayer({
+      textContent,
+      container: textLayerDiv,
+      viewport,
+      textDivs: [],
+    });
+
+    // ====== NEW: Apply Highlight ======
+    if (highlightText) {
+      const regex = new RegExp(highlightText, 'gi');
+      // Wait a bit for text layer rendering
+      setTimeout(() => {
+        textLayerDiv.querySelectorAll('span').forEach(span => {
+          if (regex.test(span.textContent)) {
+            span.style.backgroundColor = '#fff176';  // yellow highlight
+            span.style.borderRadius = '3px';
+            span.style.padding = '2px';
+          }
+        });
+      }, 300);
+    }
+
+    document.getElementById('pdfPageNum').textContent = num;
+    currentPDFPage = num;
+
+  } catch (error) {
+    console.error('Error rendering PDF page:', error);
+  }
+}
+*/
+
+        window.nextPDFPage = function() {
+            if (currentPDFPage < pdfDoc.numPages) {
+                currentPDFPage++;
+                renderPDFPage(currentPDFPage);
+            }
+        };
+
+        window.prevPDFPage = function() {
+            if (currentPDFPage > 1) {
+                currentPDFPage--;
+                renderPDFPage(currentPDFPage);
+            }
+        };
+
+        window.zoomIn = function() {
+            pdfScale += 0.25;
+            renderPDFPage(currentPDFPage);
+        };
+
+        window.zoomOut = function() {
+            if (pdfScale > 0.5) {
+                pdfScale -= 0.25;
+                renderPDFPage(currentPDFPage);
+            }
+        };
+
+        // ========================================
+        // Initialize on Load
+        // ========================================
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
